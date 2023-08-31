@@ -15,7 +15,7 @@ The provider is the name of the provider that hosts the webcam. The camera_id is
 ## Providers Supported
 
 - Surfchex
-  - example URL: `http://www.surfchex.com/cams/avon-pier/`
+  - example URL: `http://www.surfchex.com/cams/avon/`
   - provider: `surfchex`
 - IPCamLive
 
@@ -32,7 +32,7 @@ This will return the true streaming URL of the webcam as a string.
 
 #### Examples
 
-    /camera/surfchex/avon-pier
+    /camera/surfchex/avon
     /camera/ipcamlive/6495b042d1523
 
 ### `GET` /stream/:provider/:camera_id
@@ -41,7 +41,7 @@ This will redirect the request to the true streaming URL of the webcam. Use this
 
 #### Examples
 
-    /stream/surfchex/avon-pier
+    /stream/surfchex/avon
     /stream/ipcamlive/6495b042d1523
 
 ## Installation
