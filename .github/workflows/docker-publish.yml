@@ -67,7 +67,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-              type=raw,value=latest,enable=${{ endsWith(GitHub.ref, ‘main’) }}
+              type=raw,value=latest,enable=${{ endsWith(GitHub.ref, 'main') }}
               type=ref,event=tag
 
       # Build and push Docker image with Buildx (don't push on PR)
