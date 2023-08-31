@@ -54,13 +54,13 @@ Run Webcam Resolver with Docker.
 
 #### Command
 
-    docker run -it --name webcam-resolver -p 8000:4567 jonmaddox/webcam-resolver
+    docker run -it --name webcam-resolver -p 8000:4567 ghcr.io/maddox/webcam-resolver
 
 #### Docker Compose
 
 ```
 webcam-resolver:
-  image: webcam-resolver
+  image: ghcr.io/maddox/webcam-resolver
   container_name: webcam-resolver
   ports:
     - "8000:4567"
