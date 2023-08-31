@@ -48,15 +48,15 @@ This will redirect the request to the true streaming URL of the webcam. Use this
 
 This project was designed to be hosted by Docker. You can run it manually, but it is not recommended.
 
-## Docker
+### Docker
 
 Run Webcam Resolver with Docker.
 
-### Comand
+#### Command
 
     docker run -it --name webcam-resolver -p 8000:4567 jonmaddox/webcam-resolver
 
-### Docker Compose
+#### Docker Compose
 
 ```
 webcam-resolver:
@@ -67,7 +67,7 @@ webcam-resolver:
   restart: always
 ```
 
-## Manually
+### Manually
 
 Just start the service with the command below:
 
