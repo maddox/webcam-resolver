@@ -32,7 +32,7 @@ This will return the true streaming URL of the webcam as a string.
 
 #### Examples
 
-    /camera/surfchex/nags-head-pier
+    /camera/surfchex/avon-pier
     /camera/ipcamlive/6495b042d1523
 
 ### `GET` /stream/:provider/:camera_id
@@ -41,8 +41,8 @@ This will redirect the request to the true streaming URL of the webcam. Use this
 
 #### Examples
 
+    /stream/surfchex/avon-pier
     /stream/ipcamlive/6495b042d1523
-    /stream/surfchex/nags-head-pier
 
 ## Installation
 
