@@ -15,7 +15,10 @@ def get_camera_url(provider, camera)
     markup = HTTParty.get("https://www.surfchex.com/cams/#{camera}/").body
     markup.scan(/src="(https:\/\/www\.surfchex\.com\/hls\/[^"]+\.m3u8)"/).flatten.first
   when 'ipcamlive'
-    stream_data = JSON.parse(HTTParty.get("https://www.ipcamlive.com/ajax/getcamerastreamstate.php?cameraalias=#{camera}").body)
+    response = HTTParty.get("https://www.ipcamlive.com/ajax/getcamerastreamstate.php?cameraalias=#{camera}").body
+    return nil if response.nil? || response.empty?
+    stream_data = JSON.parse(response) rescue nil
+    return nil unless stream_data&.dig('details', 'streamid')
     logger.info "Stream data: #{stream_data}"
     "#{stream_data['details']['address']}streams/#{stream_data['details']['streamid']}/stream.m3u8"
   end
