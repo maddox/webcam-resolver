@@ -13,7 +13,7 @@ def get_camera_url(provider, camera)
   case provider
   when 'surfchex'
     markup = HTTParty.get("https://www.surfchex.com/cams/#{camera}/").body
-    markup.scan(/src:  \"(https:\/\/\w+\.streamlock.*\.m3u8)\"/m).flatten.first
+    markup.scan(/src="(https:\/\/www\.surfchex\.com\/hls\/[^"]+\.m3u8)"/).flatten.first
   when 'ipcamlive'
     stream_data = JSON.parse(HTTParty.get("https://www.ipcamlive.com/ajax/getcamerastreamstate.php?cameraalias=#{camera}").body)
     logger.info "Stream data: #{stream_data}"
