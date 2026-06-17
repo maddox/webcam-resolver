@@ -30,6 +30,11 @@ Single-file application (`webcam-resolver.rb`) with two endpoints:
 Add a new `when` clause in `get_camera_url()`. Each provider has different resolution logic:
 - **surfchex**: Scrapes HTML page, extracts m3u8 URL via regex
 - **ipcamlive**: Fetches JSON API, constructs stream URL from response
+- **surfline**: `:camera` is the cam's hex id (the part after `/cam/` in an embed URL like `https://embed.cdn-surfline.com/cam/<id>.html`). Scrapes that embed page for the `hls.cdn-surfline.com` m3u8 URL.
+
+### Surfline: why `/stream` is special-cased
+
+Surfline gates the `.m3u8` playlist behind a `Referer` header (a bare request returns `403`), but serves the `.ts` segments publicly. A plain redirect would `403` because the client can't supply that header. So `/stream/surfline` does not redirect — it fetches the playlist with the `Referer` itself and rewrites the relative segment names to absolute CDN URLs, so the client streams segments straight from Surfline's CDN (no proxying/buffering/disk on the server). The playlist is a live sliding window with no `#EXT-X-ENDLIST`, so the player keeps re-requesting `/stream/surfline/:camera` and always gets the current segments. `/camera/surfline` returns the raw (referer-gated) playlist URL. If Surfline ever serves a master playlist with bitrate variants, the variant sub-playlists would need the same rewrite treatment.
 
 ## Deployment
 

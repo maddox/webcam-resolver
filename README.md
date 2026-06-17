@@ -25,11 +25,6 @@ The provider is the name of the provider that hosts the webcam. The camera_id is
 
   - example URL: `https://embed.cdn-surfline.com/cam/58349ab8e411dc743a5d52a0.html`
   - provider: `surfline`
-  - The camera id is the hex id from the embed URL (the part after `/cam/`). Find it by inspecting the `<iframe>` of a page that embeds the cam, or via the embed/share code on surfline.com. Some pages inject the iframe with JavaScript, so check the live DOM rather than "View Source".
-
-### A note on Surfline
-
-Surfline gates the `.m3u8` playlist behind a `Referer` header (a bare request returns `403`), but serves the `.ts` video segments publicly. Because the client can't supply that header, `/stream/surfline` does not redirect like the other providers. Instead it fetches the playlist with the `Referer` itself and rewrites the relative segment names to absolute CDN URLs, so the client streams the video straight from Surfline's CDN — no proxying, buffering, or disk use on the server. `/camera/surfline` still returns the raw (referer-gated) playlist URL.
 
 ## Endpoints
 
