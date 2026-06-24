@@ -22,7 +22,8 @@ def get_camera_url(provider, camera)
     logger.info "Stream data: #{stream_data}"
     "#{stream_data['details']['address']}streams/#{stream_data['details']['streamid']}/stream.m3u8"
   when 'surfline'
-    markup = HTTParty.get("https://embed.cdn-surfline.com/cam/#{camera}.html").body
+    # Surfline Referer-gates the embed page (and the playlist), so send one.
+    markup = HTTParty.get("https://embed.cdn-surfline.com/cam/#{camera}.html", headers: { 'Referer' => 'https://www.surfline.com/' }).body
     markup.scan(/(https:\/\/hls\.cdn-surfline\.com\/[^"']+?\.m3u8)/).flatten.first
   end
 end
