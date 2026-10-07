@@ -98,3 +98,10 @@ workflows after 60 days of repository inactivity -- that is what silently stoppe
 publishing in August 2026 -- so if it happens again the daily drift check goes
 quiet while the publish gate keeps working. A failing live test blocks publishing
 by design; if a cam dies for good, swap the constant in `test/live_test.rb`.
+
+When the daily run fails, it opens a `provider-drift` issue (or comments on the
+one already open) and, for a new issue only, runs Claude via
+`anthropics/claude-code-action` to diagnose it and open a PR, or comment its
+findings if it can't fix it. `claude.yml` does the same on demand: the repo owner
+mentions `@claude` in an issue or PR comment. Both authenticate with the
+`CLAUDE_CODE_OAUTH_TOKEN` secret.

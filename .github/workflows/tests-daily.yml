@@ -15,3 +15,85 @@ on:
 jobs:
   test:
     uses: ./.github/workflows/tests.yml
+    permissions:
+      contents: read
+
+  # A failure opens one provider-drift issue. While that issue stays open, later
+  # failures comment on it instead, so a break that lasts a week is one issue,
+  # not seven.
+  report:
+    needs: test
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    outputs:
+      issue: ${{ steps.issue.outputs.number }}
+      opened: ${{ steps.issue.outputs.opened }}
+    steps:
+      - id: issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          existing=$(gh issue list --label provider-drift --state open --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "Still failing: $RUN_URL"
+            echo "number=$existing" >> "$GITHUB_OUTPUT"
+            echo "opened=false" >> "$GITHUB_OUTPUT"
+          else
+            gh label create provider-drift --color d93f0b --description "Daily live tests failed" --force
+            url=$(gh issue create --label provider-drift \
+              --title "Daily live tests failing" \
+              --body "The daily live provider suite failed: $RUN_URL")
+            echo "number=${url##*/}" >> "$GITHUB_OUTPUT"
+            echo "opened=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  # Claude only takes a swing when the issue is new, not on every day it stays
+  # broken. It runs here rather than off the issue event because an issue opened
+  # with GITHUB_TOKEN doesn't trigger other workflows. The !cancelled() matters:
+  # without a status function GitHub adds success(), which looks past report to
+  # the failed test job and skips this every time.
+  fix:
+    needs: report
+    if: ${{ !cancelled() && needs.report.outputs.opened == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            The daily live provider tests failed in run ${{ github.run_id }}
+            (${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}),
+            and issue #${{ needs.report.outputs.issue }} was opened for it.
+
+            1. Read the failed log (`gh run view ${{ github.run_id }} --log-failed`) to see which tests broke.
+            2. Build the image and reproduce the failure as CLAUDE.md describes.
+            3. Work out whether the provider changed something or the cam simply went
+               offline. Fetch the provider's pages and endpoints with curl to see what
+               they serve now.
+            4. If it's provider drift, fix the resolver. If the cam is gone for good,
+               swap the constant in test/live_test.rb for a live cam from the same
+               provider. Never weaken an assertion just to make it pass.
+            5. Run both test suites in the container until they pass.
+            6. Push a branch named claude/provider-drift-${{ needs.report.outputs.issue }}
+               and open a PR against main whose body explains what changed on the
+               provider's side and ends with "Fixes #${{ needs.report.outputs.issue }}".
+
+            If you can't fix it, don't open a PR. Comment on issue
+            #${{ needs.report.outputs.issue }} with what you found instead.
+          claude_args: |
+            --max-turns 60
+            --allowedTools "Read,Write,Edit,Glob,Grep,WebFetch,Bash(git:*),Bash(gh:*),Bash(curl:*),Bash(docker:*)"
