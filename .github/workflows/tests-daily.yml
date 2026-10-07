@@ -53,10 +53,12 @@ jobs:
 
   # Claude only takes a swing when the issue is new, not on every day it stays
   # broken. It runs here rather than off the issue event because an issue opened
-  # with GITHUB_TOKEN doesn't trigger other workflows.
+  # with GITHUB_TOKEN doesn't trigger other workflows. The !cancelled() matters:
+  # without a status function GitHub adds success(), which looks past report to
+  # the failed test job and skips this every time.
   fix:
     needs: report
-    if: needs.report.outputs.opened == 'true'
+    if: ${{ !cancelled() && needs.report.outputs.opened == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
